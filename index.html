@@ -296,20 +296,20 @@ dialog .opts .btn{padding:13px;font-size:16px}
 :root{
   --bg:#F6F5F2; --surface:#FFFFFF; --ink:#1B1B1A; --muted:#6E6C67; --line:#E6E3DD;
   --corn:#F2C230; --corn-ink:#2B2100; --navy:#2B3340; --navy-soft:#EEEFF1;
-  --due:#B42318; --due-soft:#FCEBE9; --ok:#1F7A3D; --ok-soft:#E5F3EA;
+  --due:#9B1C14; --due-soft:#FCEBE9; --ok:#1F7A3D; --ok-soft:#E5F3EA;
   --shadow:none; --r1:12px; --r2:16px; --dock:#1C1C1B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#121211; --surface:#1C1C1B; --ink:#F2F1EE; --muted:#A3A19B; --line:#2C2B29;
     --navy:#3D4654; --navy-soft:#26282C;
-    --due:#F2867A; --due-soft:#3A1F1C; --ok:#7FD39A; --ok-soft:#1C2E22; --dock:#262624;
+    --due:#EF4444; --due-soft:#3A1F1C; --ok:#7FD39A; --ok-soft:#1C2E22; --dock:#262624;
   }
 }
 :root[data-theme="dark"]{
   --bg:#121211; --surface:#1C1C1B; --ink:#F2F1EE; --muted:#A3A19B; --line:#2C2B29;
   --navy:#3D4654; --navy-soft:#26282C;
-  --due:#F2867A; --due-soft:#3A1F1C; --ok:#7FD39A; --ok-soft:#1C2E22; --dock:#262624;
+  --due:#EF4444; --due-soft:#3A1F1C; --ok:#7FD39A; --ok-soft:#1C2E22; --dock:#262624;
 }
 
 /* tipografia mais calma: menos negrito pesado */
@@ -343,7 +343,7 @@ h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
 .pseg{background:rgba(255,255,255,.07)}
 .pseg button{font-weight:600;color:rgba(255,255,255,.7)}
 .pseg button[aria-pressed="true"]{background:#fff;color:#1B1B1A}
-.pseg button[data-m="pendente"][aria-pressed="true"]{background:#E5533F;color:#fff}
+.pseg button[data-m="pendente"][aria-pressed="true"]{background:#D92D20;color:#fff}
 .notas button,.troco input{border:1px solid rgba(255,255,255,.16);font-weight:600}
 /* Registrar: bloco quadradão, fácil de acertar na correria */
 .checkout #btnReg{border-radius:10px;padding:0 24px;min-height:58px;min-width:132px;font-size:17px}
@@ -553,7 +553,7 @@ nav.tabs button:active{transform:none}
       <button id="dNext" aria-label="Próximo dia">›</button>
     </div>
     <div class="ticket">
-      <div class="lbl">Total do dia (quando todos pagarem)</div>
+      <div class="lbl">Total do dia</div>
       <div class="big" id="sVend">R$ 0,00</div>
       <div class="calc" id="tRec"></div>
       <div class="bar" id="tBar" aria-hidden="true"><i class="din"></i><i class="pix"></i><i class="due"></i></div>
