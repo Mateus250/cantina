@@ -1,6 +1,6 @@
 // Service worker: permite instalar como app e abrir sem internet.
 // Os dados sempre vÃªm do Supabase; aqui sÃ³ guardamos os arquivos do app (rede primeiro, cÃ³pia se cair).
-const CACHE = "cantina-app-v3";
+const CACHE = "cantina-app-v4";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"];
 const KEEP = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
