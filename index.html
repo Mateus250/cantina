@@ -260,6 +260,19 @@ table.prod tfoot td{font-weight:800}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.act{pointer-events:auto;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 16px;text-align:left;width:max-content}
 .toast button{border:0;background:var(--corn);color:var(--corn-ink);font-weight:800;font-size:15px;border-radius:9px;padding:9px 14px;flex:none}
+.seg.two{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}
+.ticket.mes::after{display:none}
+.ticket .mrec{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-top:2px dashed rgba(43,33,0,.35);margin:14px -20px 0;padding:12px 20px 0;font-weight:600;font-size:15px}
+.ticket .mrec b{font-size:20px;font-weight:800}
+.mday{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;color:var(--ink);font:inherit}
+.mday .mi{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mday .mt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mday .mt b{font-size:16px;font-weight:800}
+.mday .mt small{color:var(--muted);font-weight:500;font-size:14px;margin-left:6px}
+.mday .mbar{height:6px;border-radius:3px;background:var(--bg);overflow:hidden}
+.mday .mbar i{display:block;height:100%;border-radius:3px;background:var(--corn)}
+.mday .mp{color:var(--muted);font-size:13px}
+.mday .chev{color:var(--muted);font-size:20px}
 [hidden]{display:none!important}
 
 dialog{border:0;border-radius:20px;padding:20px;background:var(--surface);color:var(--ink);max-width:420px;width:calc(100% - 24px);max-height:calc(100% - 32px)}
@@ -547,6 +560,8 @@ nav.tabs button:active{transform:none}
 
   <!-- RESUMO -->
   <section id="v-resumo" hidden>
+    <div class="seg two" id="rSeg"><button data-r="dia" aria-pressed="true">Dia</button><button data-r="mes" aria-pressed="false">Mês</button></div>
+    <div id="rDia">
     <div class="datenav">
       <button id="dPrev" aria-label="Dia anterior">‹</button>
       <div class="d" id="dLbl"></div>
@@ -572,6 +587,29 @@ nav.tabs button:active{transform:none}
     <div id="prodTable"></div>
     <h2>Pedidos do dia</h2>
     <div id="dayList"></div>
+    </div>
+    <div id="rMes" hidden>
+      <div class="datenav">
+        <button id="mPrev" aria-label="Mês anterior">‹</button>
+        <div class="d" id="mLbl"></div>
+        <button id="mNext" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="ticket mes">
+        <div class="lbl">Total vendido no mês</div>
+        <div class="big" id="mVend">R$ 0,00</div>
+        <div class="calc" id="mSub"></div>
+        <div class="mrec"><span>Já recebido</span><b id="mRec">R$ 0,00</b></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Dinheiro</small><b id="mDin">R$ 0,00</b></div>
+        <div class="stat"><small>Pix</small><b id="mPix">R$ 0,00</b></div>
+        <div class="stat due"><small>Fiado aberto</small><b id="mDue">R$ 0,00</b></div>
+      </div>
+      <h2>O que saiu no mês</h2>
+      <div id="mProd"></div>
+      <h2>Dias com venda</h2>
+      <div id="mDias"></div>
+    </div>
   </section>
 
   <!-- FIADO -->
@@ -1184,11 +1222,58 @@ nav.tabs button:active{transform:none}
   }
   setInterval(()=>document.querySelectorAll(".order .age").forEach(e=>{ e.textContent=ago(+e.dataset.t); e.classList.toggle("late",Date.now()-e.dataset.t>=15*6e4); }),30000);
 
+  /* ---------- resumo do mês ---------- */
+  var RM="dia", VM=today().slice(0,7);
+  const monthLabel=m=>{ const [y,mm]=m.split("-").map(Number); const s=new Date(y,mm-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"}); return s.charAt(0).toUpperCase()+s.slice(1); };
+  const shiftMonth=(m,n)=>{ const [y,mm]=m.split("-").map(Number); const x=new Date(y,mm-1+n,1); return x.getFullYear()+"-"+pad(x.getMonth()+1); };
+  $("rSeg").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b||b.dataset.r===RM) return; RM=b.dataset.r; renderResumo(); window.scrollTo(0,0); });
+  $("mPrev").onclick=()=>{ VM=shiftMonth(VM,-1); renderMes(); };
+  $("mNext").onclick=()=>{ VM=shiftMonth(VM,1); renderMes(); };
+  function renderMes(){
+    const sum=a=>a.reduce((x,s)=>x+s.total,0);
+    const sold=S.sales.filter(s=>String(s.dia||"").slice(0,7)===VM);
+    const vend=sum(sold), vDin=sum(sold.filter(s=>s.status==="pago"&&s.metodo==="dinheiro")), vPix=sum(sold.filter(s=>s.status==="pago"&&s.metodo==="pix")), due=vend-vDin-vPix;
+    const byDay={}; sold.forEach(s=>{ (byDay[s.dia]=byDay[s.dia]||[]).push(s); });
+    const dias=Object.keys(byDay).sort().reverse();
+    $("mLbl").textContent=""; $("mLbl").append(monthLabel(VM), el("small",{text:dias.length?(dias.length===1?"1 dia com venda":dias.length+" dias com venda"):"nenhuma venda"}));
+    $("mNext").disabled = VM>=today().slice(0,7);
+    $("mVend").textContent=brl(vend);
+    $("mSub").textContent=sold.length ? sold.length+(sold.length===1?" pedido":" pedidos")+" · média de "+brl(Math.round(vend/sold.length))+" por pedido" : "Nenhuma venda neste mês";
+    $("mRec").textContent=brl(vDin+vPix);
+    $("mDin").textContent=brl(vDin); $("mPix").textContent=brl(vPix); $("mDue").textContent=brl(due);
+    const agg={}; sold.forEach(s=>s.itens.forEach(i=>{ agg[i.nome]=agg[i.nome]||{q:0,v:0}; agg[i.nome].q+=i.qtd; agg[i.nome].v+=i.qtd*i.preco; }));
+    const pt=$("mProd"); pt.textContent=""; const keys=Object.keys(agg).sort((a,b)=>agg[b].v-agg[a].v);
+    if(!keys.length) pt.append(el("div",{class:"empty",text:"Nenhuma venda neste mês."}));
+    else{
+      const tb=el("tbody"); keys.forEach(k=>tb.append(el("tr",{},[el("td",{text:k}),el("td",{class:"r",text:String(agg[k].q)}),el("td",{class:"r",text:brl(agg[k].v)})])));
+      pt.append(el("div",{style:"overflow-x:auto"},el("table",{class:"prod"},[ el("thead",{},el("tr",{},[el("th",{text:"Produto"}),el("th",{class:"r",text:"Qtd"}),el("th",{class:"r",text:"Valor"})])), tb,
+        el("tfoot",{},el("tr",{},[el("td",{text:"Total"}),el("td",{class:"r",text:String(keys.reduce((a,k)=>a+agg[k].q,0))}),el("td",{class:"r",text:brl(vend)})])) ])));
+    }
+    const ml=$("mDias"); ml.textContent="";
+    if(!dias.length){ ml.append(el("div",{class:"empty",text:"Os dias com venda aparecem aqui."})); return; }
+    const max=Math.max(1,...dias.map(x=>sum(byDay[x])));
+    dias.forEach(x=>{
+      const v=sum(byDay[x]), n=byDay[x].length, [, mm, dd]=x.split("-"), bar=el("i");
+      bar.style.width=(v/max*100)+"%";
+      ml.append(el("button",{class:"mday",type:"button","aria-label":"Ver o dia "+brDate(x),onclick:()=>{ RM="dia"; S.viewDay=x; renderResumo(); window.scrollTo(0,0); }},[
+        el("div",{class:"mi"},[
+          el("div",{class:"mt"},[ el("span",{},[el("b",{text:dd+"/"+mm}), el("small",{text:x===today()?"hoje":weekday(x)})]), el("b",{text:brl(v)}) ]),
+          el("div",{class:"mbar","aria-hidden":"true"},bar),
+          el("span",{class:"mp",text:n+(n===1?" pedido":" pedidos")})
+        ]),
+        el("span",{class:"chev","aria-hidden":"true",text:"›"})
+      ]));
+    });
+  }
+
   /* ---------- resumo ---------- */
   $("dPrev").onclick=()=>{ S.viewDay=shiftDay(S.viewDay,-1); renderResumo(); };
   $("dNext").onclick=()=>{ S.viewDay=shiftDay(S.viewDay,1); renderResumo(); };
   $("fFundo").addEventListener("change",()=>{ const v=parseMoney($("fFundo").value), d=S.viewDay; run(()=>S.dl.saveDia(d,v),"Troco inicial salvo"); });
   function renderResumo(){
+    $("rDia").hidden=RM!=="dia"; $("rMes").hidden=RM!=="mes";
+    $("rSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.r===RM)));
+    if(RM==="mes"){ renderMes(); return; }
     const d=S.viewDay;
     $("dLbl").textContent=""; $("dLbl").append(brDate(d), el("small",{text:d===today()?"hoje":weekday(d)}));
     $("dNext").disabled = d>=today();
